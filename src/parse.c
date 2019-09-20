@@ -100,6 +100,6 @@ unsigned int get_max_child_process_count() {
 }
 
 
-char* get_logfile_path() {
+const char* get_logfile_path() {
     return global_program_options.logfile_path;
 }

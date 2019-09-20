@@ -24,6 +24,6 @@ unsigned int get_allowable_run_time();
 unsigned int get_max_child_process_count();
 
 
-char* get_logfile_path();
+const char* get_logfile_path();
 
 #endif
