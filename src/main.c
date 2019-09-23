@@ -37,6 +37,8 @@ int main(int argc, char* argv[]) {
     }
 
     // Loop and check shared memory 
+    // TODO: Move child pid termination checking code
+    // and semaphors to a sep file. 
 
     // Wait for all child processes to terminate.
     if (spawned_proc_id) {
