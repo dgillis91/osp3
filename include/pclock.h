@@ -1,3 +1,9 @@
+/* pclock.h
+** Abstract representation of a shared clock.
+** We need to create atomic access to the clock (sounds funny). 
+** We will have n-many processes. We need to ensure that only
+** the parent can modify the clock. All children can read it. 
+*/
 #ifndef P_CLOCK_H_
 #define P_CLOCK_H_
 
