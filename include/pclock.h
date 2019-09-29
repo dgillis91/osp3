@@ -6,6 +6,7 @@
 */
 #ifndef P_CLOCK_H_
 #define P_CLOCK_H_
+#include <signal.h>
 
 #define NANO_SEC_IN_SEC 1000000000
 
@@ -15,9 +16,11 @@ typedef struct {
     unsigned int seconds;
     unsigned int nanoseconds;
     unsigned long total_tick;
+    sig_atomic_t ready;
 } pclock_t;
 
 
+int init_clock(int, int);
 pclock_t get_copy();
 void tick(int);
 pclock_t add(pclock_t, unsigned int);
