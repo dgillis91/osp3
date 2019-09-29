@@ -59,6 +59,17 @@ int init_clock(int key) {
 }
 
 
+int destruct_clock(int key, int shid) {
+    if (removesem(semid) == -1) {
+        return -1;
+    }
+    if (detachandremove(shid, (void*)system_clock) == -1) {
+        return -1;
+    }
+    return 1;
+}
+
+
 pclock_t get_copy() {
     pclock_t copy;
     copy.nanoseconds = system_clock->nanoseconds;
@@ -113,6 +124,7 @@ unsigned int get_seconds() {
     unsigned int s = system_clock->seconds;
     if (semop(semid, &semunlock, 1) == -1)
         return 0;
+    return s;
 }
 
 

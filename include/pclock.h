@@ -22,6 +22,7 @@ typedef struct {
 
 
 int init_clock(int);
+int destruct_clock(int, int);
 pclock_t get_copy();
 int tick(int);
 pclock_t add(pclock_t, unsigned int);
