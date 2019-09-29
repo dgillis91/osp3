@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <semaphore.h>
+#include "../include/semutil.h"
+#include "../include/pclock.h"
+#include "../include/parse.h"
 
 
 #include "../include/parse.h"
@@ -39,6 +42,9 @@ int main(int argc, char* argv[]) {
     // Loop and check shared memory 
     // TODO: Move child pid termination checking code
     // and semaphors to a sep file. 
+    while (1) {
+        
+    }
 
     // Wait for all child processes to terminate.
     if (spawned_proc_id) {

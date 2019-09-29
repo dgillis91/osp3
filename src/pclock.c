@@ -4,6 +4,12 @@
 static pclock_t system_clock = {0, 0, 0};
 
 
+int init_clock(int key, int is_child) {
+    // TODO
+    return 0;
+}
+
+
 pclock_t get_copy() {
     pclock_t copy;
     copy.nanoseconds = system_clock.nanoseconds;
