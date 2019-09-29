@@ -105,3 +105,24 @@ int is_equal_to_sys_clock(pclock_t clock) {
         return -1;
     return is_equal;
 }
+
+
+unsigned int get_seconds() {
+    if (semop(semid, &semlock, 1) == -1)
+        return 0;
+    unsigned int s = system_clock->seconds;
+    if (semop(semid, &semunlock, 1) == -1)
+        return 0;
+}
+
+
+unsigned int get_nano() {
+    if (semop(semid, &semlock, 1) == -1) {
+        return 0;
+    }
+    unsigned int n = system_clock->nanoseconds;
+    if (semop(semid, &semunlock, 1) == -1) {
+        return 0;
+    }
+    return n;
+}
