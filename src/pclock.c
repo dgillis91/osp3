@@ -18,7 +18,7 @@ static struct sembuf semunlock;
 static pclock_t* system_clock;
 
 
-int init_clock(int key, int is_child) {
+int init_clock(int key) {
     int shid;
 
     setsembuf(&semlock, 0, -1, 0);

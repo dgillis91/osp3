@@ -21,9 +21,9 @@ typedef struct {
 } pclock_t;
 
 
-int init_clock(int, int);
+int init_clock(int);
 pclock_t get_copy();
-void tick(int);
+int tick(int);
 pclock_t add(pclock_t, unsigned int);
 void add_in_place(pclock_t*, unsigned int);
 int is_equal_to_sys_clock(pclock_t);
