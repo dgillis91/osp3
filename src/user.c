@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "../include/util.h"
@@ -18,10 +19,12 @@ int main(int argc, char* argv[]) {
     // Initialize the system clock
     int system_clock_shid = init_clock(KEY);
 
-    fprintf(stderr, "[%ld] System Time: %d\n", (long) getpid(), get_nano());
+    pclock_t stop_time;
+    pclock_t local_clock;
+    get_copy(&local_clock);
+    fprintf(stderr, "[%ld] Local Clock Time: %lu\n", (long) getpid(), local_clock.total_tick);
+    stop_time = add(local_clock, run_time);
+    fprintf(stderr, "[%ld] Local Clock Stop Time: %lu\n", (long) getpid(), stop_time.total_tick);
 
-    //pclock_t stop_time;
-    //pclock_t local_clock;
-    //get_copy(&local_clock);
-    //stop_time = add(local_clock, run_time);
+    return EXIT_SUCCESS;
 }
