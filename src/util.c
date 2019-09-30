@@ -10,3 +10,11 @@ unsigned int rand_between(unsigned int lower, unsigned int upper) {
     */
     return (rand() % (upper - lower + 1)) + lower;
 }
+
+
+unsigned int rand_below(unsigned int max) {
+    /* Return a random number below `max` but 
+    ** greater than or equal to 0.
+    */
+    return (rand() % max);
+}
