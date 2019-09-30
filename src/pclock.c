@@ -91,6 +91,7 @@ int tick(int nanoseconds) {
 }
 
 
+// TODO: These clock methods should have more informative names.
 pclock_t add(pclock_t clock, unsigned int nanoseconds) {
     add_in_place(&clock, nanoseconds);
     return clock;
