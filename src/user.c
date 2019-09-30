@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "../include/util.h"
 #include "../include/pclock.h"
 
-#define RUN_TIME_MIN 0
 #define RUN_TIME_MAX 1000000
 
 // XXX - This should really be based on path or something
@@ -13,8 +13,10 @@
 
 
 int main(int argc, char* argv[]) {
+    srand(time(NULL));
     unsigned int run_time;
-    run_time = rand_between(RUN_TIME_MIN, RUN_TIME_MAX);
+    run_time = rand_below(RUN_TIME_MAX);
+    fprintf(stderr, "[%ld] Random Number: %u\n", (long) getpid(), run_time);
 
     // Initialize the system clock
     int system_clock_shid = init_clock(KEY);
