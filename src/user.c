@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <unistd.h>
+
 #include "../include/util.h"
 #include "../include/pclock.h"
 
@@ -15,7 +18,10 @@ int main(int argc, char* argv[]) {
     // Initialize the system clock
     int system_clock_shid = init_clock(KEY);
 
-    pclock_t stop_time;
+    fprintf(stderr, "[%ld] System Time: %d\n", (long) getpid(), get_nano());
 
-    stop_time = add
+    //pclock_t stop_time;
+    //pclock_t local_clock;
+    //get_copy(&local_clock);
+    //stop_time = add(local_clock, run_time);
 }
