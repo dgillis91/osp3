@@ -13,7 +13,7 @@
 
 
 int main(int argc, char* argv[]) {
-    srand(time(NULL));
+    srand(time(NULL) ^ (getpid() << 16));
     unsigned int run_time;
     run_time = rand_below(RUN_TIME_MAX);
     fprintf(stderr, "[%ld] Random Number: %u\n", (long) getpid(), run_time);
