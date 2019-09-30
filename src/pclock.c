@@ -72,7 +72,6 @@ int destruct_clock(int key, int shid) {
 
 
 int get_copy(pclock_t* copy) {
-    pclock_t copy;
     if (semop(semid, &semlock, 1) == -1) 
         return -1;
     copy->total_tick = system_clock->total_tick;
