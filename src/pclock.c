@@ -1,4 +1,5 @@
 #include <signal.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <sys/sem.h>
@@ -70,11 +71,16 @@ int destruct_clock(int key, int shid) {
 }
 
 
-pclock_t get_copy() {
+int get_copy(pclock_t* copy) {
     pclock_t copy;
-    copy.nanoseconds = system_clock->nanoseconds;
-    copy.seconds = system_clock->seconds;
-    return copy;
+    if (semop(semid, &semlock, 1) == -1) 
+        return -1;
+    copy->total_tick = system_clock->total_tick;
+    copy->nanoseconds = system_clock->nanoseconds;
+    copy->seconds = system_clock->seconds;
+    if (semop(semid, &semunlock, 1) == -1)
+        return -1;
+    return 1;
 }
 
 
