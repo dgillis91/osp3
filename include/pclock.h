@@ -30,6 +30,7 @@ void add_in_place(pclock_t*, unsigned int);
 int is_equal_to_sys_clock(pclock_t);
 unsigned int get_seconds();
 unsigned int get_nano();
+unsigned int get_total_tick();
 
 
 #endif

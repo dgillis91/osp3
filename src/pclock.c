@@ -144,3 +144,14 @@ unsigned int get_nano() {
     }
     return n;
 }
+
+unsigned int get_total_tick() {
+    if (semop(semid, &semlock, 1) == -1) {
+        return 0;
+    }
+    unsigned int t = system_clock->total_tick;
+    if (semop(semid, &semunlock, 1) == -1) {
+        return 0;
+    }
+    return t;
+}
