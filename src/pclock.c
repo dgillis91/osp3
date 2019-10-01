@@ -12,7 +12,7 @@
 
 #define PERM (S_IRUSR | S_IWUSR)
 
-
+// TODO: A better design would be to always have sec and nano derived. Just use total tick.
 static int semid;
 static struct sembuf semlock;
 static struct sembuf semunlock;
