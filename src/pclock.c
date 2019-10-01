@@ -145,6 +145,7 @@ unsigned int get_nano() {
     return n;
 }
 
+
 unsigned int get_total_tick() {
     if (semop(semid, &semlock, 1) == -1) {
         return 0;
