@@ -11,3 +11,6 @@ using a singleton design with methods that return this static data. I'll decide 
 I like this approach by the end of the project. If nothing else, it's easier to read than
 pointers, and only marginally harder than returning struct copies. 
 
+## To Do:
+- This code is no longer consistent with respect to standards and needs to be updated. For
+example, there are function definitions without argument names and some with (preferred).
