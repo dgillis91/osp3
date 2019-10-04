@@ -11,7 +11,3 @@ using a singleton design with methods that return this static data. I'll decide 
 I like this approach by the end of the project. If nothing else, it's easier to read than
 pointers, and only marginally harder than returning struct copies. 
 
-
-### Outstanding Questions
-- Will I need to keep some reference to all child pid_ts? as of right now, I don't *think*
-so. This could change.
