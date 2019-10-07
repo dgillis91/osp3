@@ -20,9 +20,14 @@ int main(int argc, char* argv[]) {
 
 
     // Initialize the system clock
-    int clock_shid;
+    int clock_shid, proc_shid;
     if ((clock_shid = init_clock(CLOCK_KEY)) == -1) {
         perror("Failed to initialize system clock.");
+        return EXIT_FAILURE;
+    }
+    if ((proc_shid = init_proc_handle(PROC_KEY) == -1)) {
+        perror("Failed to initialize process handle");
+        destruct_clock(CLOCK_KEY, clock_shid);
         return EXIT_FAILURE;
     }
 
@@ -42,25 +47,43 @@ int main(int argc, char* argv[]) {
     }
 
     // Loop and check shared memory 
-    // TODO: Move child pid termination checking code
-    // and semaphors to a sep file. 
-
-    // Wait for all child processes to terminate.
+    unsigned int max_run_time = get_allowable_run_time();
     if (spawned_proc_id) {
-        while (get_nano() < 100) {
-            tick(1);
-            fprintf(stderr, "System Time %d\n", get_nano());
+        // While we are less than the run time
+        while (get_seconds() < max_run_time) {
+            // Tick the clock
+            tick(5);
+            // If we have procs ready to terminate . . . 
+            if (get_count_procs_ready_terminate() > 0) {
+                // Signify that we are adding another, decreasing the count
+                mark_terminate();
+                // Spawn a proc
+                spawned_proc_id = fork();
+                // If the process ID is the child, break out of the loop to exec.
+                if (spawned_proc_id == CHILD_PROCESS) {
+                    break;
+                }
+            }
         }
+    } 
+
+    // Exec in the child
+    if (spawned_proc_id == CHILD_PROCESS) {
+        execl("user", "user", NULL);
+    }
+
+    // Wait for all child processes to terminate and clean up.
+    if (spawned_proc_id) {
         int status = 0;
         pid_t wait_pid;
         while((wait_pid = wait(&status)) > 0);
         if (destruct_clock(CLOCK_KEY, clock_shid) == -1) {
             perror("Failed to deallocate clock");
         }
-    } else {
-        execl("user", "user", NULL);
-        //fprintf(stderr, "[%ld] System Time: %d\n", (long) getpid(), get_nano());
-    }
+        if (destruct_proc_handle(PROC_KEY, proc_shid) == -1) {
+            perror("Failed to deallocate proc_handle");
+        }
+    } 
 
     return EXIT_SUCCESS;    
 }
