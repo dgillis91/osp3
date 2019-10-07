@@ -84,7 +84,7 @@ void parse_options(int argc, char* argv[]) {
 
 
 void set_default_program_options() {
-    global_program_options.allowable_run_time = 10000000L;
+    global_program_options.allowable_run_time = 10L;
     global_program_options.max_child_process_count = 5;
     strcpy(global_program_options.logfile_path, "log.txt");
 }
