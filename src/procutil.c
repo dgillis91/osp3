@@ -10,8 +10,6 @@
 
 #define PROC_HANDLE_PERM (S_IRUSR | S_IWUSR)
 
-#define FULL_BUFFER -3
-#define EMPTY_BUFFER -2
 #define NULL_PID (pid_t)(0)
 
 static int semid;
@@ -44,6 +42,7 @@ int init_proc_handle(int key) {
         if (proc_handle == (void*)(-1)) {
             return -1;
         }
+        proc_handle->count_procs_ready_terminate = 0;
     }
     semid = initsemset(key, 1, &proc_handle->ready);
     if (semid == -1) {
@@ -52,127 +51,61 @@ int init_proc_handle(int key) {
     return shid;
 }
 
-
-void set_max_process_count(unsigned int max_process_count) {
-    /* Not thread safe. Call AFTER init. */
-    proc_handle->max_process_count = max_process_count;
-}
-
-
-unsigned int get_max_process_count() {
-    return proc_handle->max_process_count;
-}
-
-
-int index_of(pid_t pid) {
-    /* Return the index of `pid`.
-    ** Uses linear search. Shouldn't be a huge problem. 
-    ** Return -1 if index is not found.
-    */
-    int is_found = 0, i = 0;
-
-    if (semop(semid, &semlock, 1) == -1) 
-        return -1;
-
-    for (i = 0; i < proc_handle->max_process_count; ++i) {
-        if ((int) pid == (int) proc_handle->proc_handle_buffer[i]) {
-            is_found = 1;
-            break;
-        }
-    }
-
-    if (semop(semid, &semunlock, 1) == -1)
-        return -1;
-
-    if (is_found) {
-        return i;
-    } else {
+/* Clear the shared memory and semaphores from
+ * the system. Must only be called once. Must
+ * only be called in the master process. 
+*/
+int destruct_proc_handle(int key, int shid) {
+    // XXX: `key` is a artifact that isn't needed.
+    // XXX: `shid` should be a static to this "module".
+    // XXX: It would be perfectly reasonable, and perhaps
+    //      beneficial to return different values instead
+    //      of -1 in each case. 
+    if (removesem(semid) == -1) {
         return -1;
     }
+    if (detachandremove(shid, proc_handle) == -1) {
+        return -1;
+    }
+    return 1;
 }
 
 
-int set_at(int index, pid_t pid) {
+/* Called in a child process to specify that the
+ * process is ready to terminate. Will increate
+ * the count of children ready to terminate.
+*/
+int mark_ready_to_terminate() {
     if (semop(semid, &semlock, 1) == -1) 
         return -1;
-    proc_handle->proc_handle_buffer[index] = pid;
+    ++proc_handle->count_procs_ready_terminate;
     if (semop(semid, &semunlock, 1) == -1)
         return -1;
     return 1;
 }
 
 
-pid_t get_at(int index) {
-    pid_t return_pid;
-    if (semop(semid, &semlock, 1) == -1)
-        return (pid_t)(0);
-    return_pid = proc_handle->proc_handle_buffer[index];
+unsigned int get_count_procs_ready_terminate() {
+    unsigned int count;
+    if (semop(semid, &semlock, 1) == -1) 
+        return 0;
+    count = proc_handle->count_procs_ready_terminate;
     if (semop(semid, &semunlock, 1) == -1)
-        return (pid_t)(0);
-    return return_pid;
+        return 0;
+    return count;
 }
 
 
-int clear() {
-    int i = 0;
-    if (semop(semid, &semlock, 1) == -1)
+/* Signifies that the master process accepted
+ * the termination of a process. Has no error
+ * handling. For now, it's on master to handle
+ * that. Will refactor if possible.
+ */
+int mark_terminate() {
+    if (semop(semid, &semlock, 1) == -1) 
         return -1;
-    for (i = 0; i < proc_handle->max_process_count; ++i) {
-        proc_handle->proc_handle_buffer[i] = NULL_PID;
-    }
+    --proc_handle->count_procs_ready_terminate;
     if (semop(semid, &semunlock, 1) == -1)
         return -1;
     return 1;
-}
-
-
-int index_of_next_unempty() {
-    /* Get the index of the next pid in the buffer.
-    ** Return:
-    **  -1 on Failure
-    **  EMPTY_BUFFER = -2 on empty
-    **  index of the first non null pid, on success.
-    */
-    int i, is_found = 0;
-    if (semop(semid, &semlock, 1) == -1) 
-        return -1;
-    for (i = 0; i < proc_handle->max_process_count; ++i) {
-        if (proc_handle->proc_handle_buffer[i] != NULL_PID) {
-            is_found = 1;
-            break;
-        }
-    }
-    if (semop(semid, &semunlock, 1) == -1)
-        return -1;
-
-    if (is_found) {
-        return i;
-    } else {
-        return EMPTY_BUFFER;
-    }
-}
-
-
-int place_at_first_empty(pid_t pid) {
-    // XXX: There's a faster algorithm for this. 
-    //      Just keep track of the next empty. IDK why
-    //      I didn't think of this. 
-    // TODO: Refactor if time allows. 
-    int i, empty_exists = 0;
-    if (semop(semid, &semlock, 1) == -1)
-        return -1;
-    for (i = 0; i < proc_handle->max_process_count; ++i) {
-        if (proc_handle->proc_handle_buffer[i] == NULL_PID) {
-            proc_handle->proc_handle_buffer[i] = pid;
-            empty_exists = 1;
-            break;
-        }
-    }
-    if (semop(semid, &semlock, 1) == -1) 
-        return -1;
-    if (empty_exists) {
-        return i;
-    } else {
-        return FULL_BUFFER;
-    }
 }
