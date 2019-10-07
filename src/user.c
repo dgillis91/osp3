@@ -9,7 +9,7 @@
 #define RUN_TIME_MAX 1000000
 
 // XXX - This should really be based on path or something
-#define KEY 8675309
+#define CLOCK_KEY 8675309
 
 
 int main(int argc, char* argv[]) {
@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     run_time = rand_below(RUN_TIME_MAX);
 
     // Initialize the system clock
-    int system_clock_shid = init_clock(KEY);
+    int system_clock_shid = init_clock(CLOCK_KEY);
 
     pclock_t stop_time;
     pclock_t local_clock;

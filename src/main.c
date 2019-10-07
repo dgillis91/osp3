@@ -9,7 +9,7 @@
 
 
 #define CHILD_PROCESS 0
-#define KEY 8675309
+#define CLOCK_KEY 8675309
 
 
 int main(int argc, char* argv[]) {
@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
     // Initialize the system clock
     int clock_shid;
-    if ((clock_shid = init_clock(KEY)) == -1) {
+    if ((clock_shid = init_clock(CLOCK_KEY)) == -1) {
         perror("Failed to initialize system clock.");
         return EXIT_FAILURE;
     }
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
         int status = 0;
         pid_t wait_pid;
         while((wait_pid = wait(&status)) > 0);
-        if (destruct_clock(KEY, clock_shid) == -1) {
+        if (destruct_clock(CLOCK_KEY, clock_shid) == -1) {
             perror("Failed to deallocate clock");
         }
     } else {
