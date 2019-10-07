@@ -25,12 +25,6 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    pid_t* child_process_handle = NULL;
-    if ((child_process_handle = (pid_t*) malloc(sizeof(pid_t) * max_child_process_count)) == NULL) {
-        perror("Failure to allocate memory for pids");
-        return EXIT_FAILURE;
-    }
-
     // Spawn off `max_child_process_count` children.
     int i;
     pid_t spawned_proc_id;
@@ -39,7 +33,6 @@ int main(int argc, char* argv[]) {
         if (spawned_proc_id == CHILD_PROCESS) {
             break;
         }
-        child_process_handle[i] = spawned_proc_id;
     }
 
     // XXX: Debug, remove.
