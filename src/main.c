@@ -10,6 +10,7 @@
 
 #define CHILD_PROCESS 0
 #define CLOCK_KEY 8675309
+#define PROC_KEY 3141579
 
 
 int main(int argc, char* argv[]) {

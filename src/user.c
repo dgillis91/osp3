@@ -10,6 +10,7 @@
 
 // XXX - This should really be based on path or something
 #define CLOCK_KEY 8675309
+#define PROC_KEY 3141579
 
 
 int main(int argc, char* argv[]) {
