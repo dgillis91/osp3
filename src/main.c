@@ -5,6 +5,7 @@
 #include "../include/pclock.h"
 #include "../include/parse.h"
 #include "../include/util.h"
+#include "../include/procutil.h"
 
 
 #define CHILD_PROCESS 0
@@ -41,6 +42,7 @@ int main(int argc, char* argv[]) {
         child_process_handle[i] = spawned_proc_id;
     }
 
+    // XXX: Debug, remove.
     if (spawned_proc_id == CHILD_PROCESS) {
         fprintf(stderr, "[+] PID: %ld; PPID: %ld\n", (long) getpid(), (long) getppid());
     }
