@@ -8,6 +8,7 @@
 #include "../include/procutil.h"
 
 
+#define TOTAL_ALLOWABLE_PROCESSES 100
 #define CHILD_PROCESS 0
 #define CLOCK_KEY 8675309
 #define PROC_KEY 3141579
@@ -48,20 +49,30 @@ int main(int argc, char* argv[]) {
 
     // Loop and check shared memory 
     unsigned int max_run_time = get_allowable_run_time();
+    unsigned int process_count = 5;
+    max_run_time *= NANO_SEC_IN_SEC;
     if (spawned_proc_id) {
+        int stat;
+        pid_t wait_pid;
         // While we are less than the run time
-        while (get_seconds() < max_run_time) {
+        while (get_total_tick() < max_run_time && process_count < TOTAL_ALLOWABLE_PROCESSES) {
+            //fprintf(stderr, "[!] %u\n", get_total_tick());
             // Tick the clock
             tick(5);
             // If we have procs ready to terminate . . . 
             if (get_count_procs_ready_terminate() > 0) {
                 // Signify that we are adding another, decreasing the count
                 mark_terminate();
+                // XXX: This wait is actually not really effective. We require
+                //      two way communication.
+                wait_pid = wait(&stat);
                 // Spawn a proc
                 spawned_proc_id = fork();
                 // If the process ID is the child, break out of the loop to exec.
                 if (spawned_proc_id == CHILD_PROCESS) {
                     break;
+                } else {
+                    ++process_count;
                 }
             }
         }

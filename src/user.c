@@ -5,6 +5,7 @@
 
 #include "../include/util.h"
 #include "../include/pclock.h"
+#include "../include/procutil.h"
 
 #define RUN_TIME_MAX 1000000
 
@@ -20,6 +21,7 @@ int main(int argc, char* argv[]) {
 
     // Initialize the system clock
     int system_clock_shid = init_clock(CLOCK_KEY);
+    int proc_shid = init_proc_handle(PROC_KEY);
 
     pclock_t stop_time;
     pclock_t local_clock;
@@ -27,6 +29,14 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "[%ld] Local Clock Time: %lu\n", (long) getpid(), local_clock.total_tick);
     stop_time = add(local_clock, run_time);
     fprintf(stderr, "[%ld] Local Clock Stop Time: %lu\n", (long) getpid(), stop_time.total_tick);
+
+    while (1) {
+        if (get_total_tick() >= stop_time.total_tick) {
+            fprintf(stderr, "Terminating %lu at %u\n", (long) getpid(), get_total_tick());
+            mark_ready_to_terminate();
+            break;
+        }
+    }
 
     return EXIT_SUCCESS;
 }
