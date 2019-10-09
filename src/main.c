@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
     if (signal(SIGALRM, alarm_handler) == SIG_ERR) {
         perror("fail to set SIGALRM");
     }
-    alarm(2);
+    alarm(get_allowable_run_time());
 
     // Initialize the system clock
     if ((clock_shid = init_clock(CLOCK_KEY)) == -1) {
@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Loop and check shared memory 
-    unsigned int max_run_time = get_allowable_run_time();
+    unsigned int max_run_time = 2;
     unsigned int process_count = get_max_child_process_count();
     max_run_time *= NANO_SEC_IN_SEC;
     if (spawned_proc_id) {
