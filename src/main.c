@@ -77,8 +77,6 @@ int main(int argc, char* argv[]) {
             if (get_count_procs_ready_terminate() > 0) {
                 // Signify that we are adding another, decreasing the count
                 mark_terminate();
-                // XXX: This wait is actually not really effective. We require
-                //      two way communication.
                 wait_pid = wait(&stat);
                 dprintf(log_file_fd, 
                         "Master: [%lu] is terminating at %u.%u\n",
@@ -90,7 +88,6 @@ int main(int argc, char* argv[]) {
                     break;
                 } else {
                     ++process_count;
-                    fprintf(stderr, "Processes: %d\n", process_count);
                 }
             }
         }
@@ -98,7 +95,6 @@ int main(int argc, char* argv[]) {
 
     if (spawned_proc_id) {
         if (process_count >= 100) {
-            fprintf(stderr, "[!] Time in master %u\n", get_total_tick());
             set_is_abrupt_terminate();
         }
     }
@@ -115,6 +111,7 @@ int main(int argc, char* argv[]) {
 
     return EXIT_SUCCESS;    
 }
+
 
 void terminate_program() {
     set_is_abrupt_terminate();
