@@ -11,7 +11,7 @@
 
 
 #define TOTAL_ALLOWABLE_PROCESSES 100
-#define TICK_INCREMENT 5
+#define TICK_INCREMENT 50
 #define CHILD_PROCESS 0
 #define CLOCK_KEY 8675309
 #define PROC_KEY 3141579
@@ -20,6 +20,8 @@ int log_file_fd, clock_shid, proc_shid;
 
 
 void terminate_program();
+void alarm_handler(int);
+void sigint_handler(int);
 
 
 int main(int argc, char* argv[]) {
@@ -27,6 +29,17 @@ int main(int argc, char* argv[]) {
     
     unsigned int max_child_process_count = get_max_child_process_count();
     log_file_fd = open(get_logfile_path(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+
+    // Set the handler for ctrl + c
+    if (signal(SIGINT, sigint_handler) == SIG_ERR) {
+        perror("fail to set SIGINT");
+    }
+
+    // Set the alarm for overall time.
+    if (signal(SIGALRM, alarm_handler) == SIG_ERR) {
+        perror("fail to set SIGALRM");
+    }
+    alarm(2);
 
     // Initialize the system clock
     if ((clock_shid = init_clock(CLOCK_KEY)) == -1) {
@@ -67,6 +80,9 @@ int main(int argc, char* argv[]) {
                 // XXX: This wait is actually not really effective. We require
                 //      two way communication.
                 wait_pid = wait(&stat);
+                dprintf(log_file_fd, 
+                        "Master: [%lu] is terminating at %u.%u\n",
+                        (long) wait_pid, get_seconds(), get_nano());
                 // Spawn a proc
                 spawned_proc_id = fork();
                 // If the process ID is the child, break out of the loop to exec.
@@ -109,6 +125,9 @@ void terminate_program() {
         if (get_count_procs_ready_terminate() > 0) {
             mark_terminate();
         }
+        dprintf(log_file_fd, 
+                "Master: [%lu] is terminating at %u.%u\n",
+                (long) wait_pid, get_seconds(), get_nano());
     }
     if (destruct_clock(CLOCK_KEY, clock_shid) == -1) {
         perror("Failed to deallocate clock");
@@ -116,5 +135,16 @@ void terminate_program() {
     if (destruct_proc_handle(PROC_KEY, proc_shid) == -1) {
         perror("Failed to deallocate proc_handle");
     }
+    close(log_file_fd);
     exit(EXIT_SUCCESS);
+}
+
+
+void alarm_handler(int signum) {
+    terminate_program();
+}
+
+
+void sigint_handler(int sugnum) {
+    terminate_program();
 }
