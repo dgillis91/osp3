@@ -1,5 +1,4 @@
 # Operating Systems Assignment Three
-
 Program to spawn children. The children will select a
 random integer and use that to decide when to terminate.
 Usage: `./oss [-h] [-t -i -o] [dirname]`
@@ -10,6 +9,10 @@ For:
     -t: Amount of time to allow the program to run for.
     -l: Log file path.
     -s: Maximum child processes.
+
+## Build
+This requires building two files. Clean with `make clean`. Then, you can build the
+master program with `make oss`, and the child with `make user`.
 
 ## Notes
 
