@@ -43,6 +43,7 @@ int init_proc_handle(int key) {
             return -1;
         }
         proc_handle->count_procs_ready_terminate = 0;
+        proc_handle->is_abrupt_terminate = 0;
     }
     semid = initsemset(key, 1, &proc_handle->ready);
     if (semid == -1) {
@@ -105,6 +106,37 @@ int mark_terminate() {
     if (semop(semid, &semlock, 1) == -1) 
         return -1;
     --proc_handle->count_procs_ready_terminate;
+    if (semop(semid, &semunlock, 1) == -1)
+        return -1;
+    return 1;
+}
+
+
+int get_is_abrupt_terminate() {
+    int is_term;
+    if (semop(semid, &semlock, 1) == -1)
+        return -1;
+    is_term = proc_handle->is_abrupt_terminate;
+    if (semop(semid, &semunlock, 1) == -1)
+        return -1;
+    return is_term;
+}
+
+
+int set_is_abrupt_terminate() {
+    if (semop(semid, &semlock, 1) == -1)
+        return -1;
+    proc_handle->is_abrupt_terminate = 1;
+    if (semop(semid, &semunlock, 1) == -1) 
+        return -1;
+    return 1;
+}
+
+
+int unset_is_abrupt_terminate() {
+    if (semop(semid, &semlock, 1) == -1)
+        return -1;
+    proc_handle->is_abrupt_terminate = 0;
     if (semop(semid, &semunlock, 1) == -1)
         return -1;
     return 1;
