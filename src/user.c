@@ -26,13 +26,10 @@ int main(int argc, char* argv[]) {
     pclock_t stop_time;
     pclock_t local_clock;
     get_copy(&local_clock);
-    fprintf(stderr, "[%ld] Local Clock Time: %lu\n", (long) getpid(), local_clock.total_tick);
     stop_time = add(local_clock, run_time);
-    fprintf(stderr, "[%ld] Local Clock Stop Time: %lu\n", (long) getpid(), stop_time.total_tick);
 
     while (1) {
         if (get_total_tick() >= stop_time.total_tick || get_is_abrupt_terminate()) {
-            fprintf(stderr, "Terminating %lu at %u\n", (long) getpid(), get_total_tick());
             mark_ready_to_terminate();
             break;
         }
