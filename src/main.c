@@ -9,6 +9,7 @@
 
 
 #define TOTAL_ALLOWABLE_PROCESSES 100
+#define TICK_INCREMENT 5
 #define CHILD_PROCESS 0
 #define CLOCK_KEY 8675309
 #define PROC_KEY 3141579
@@ -26,7 +27,7 @@ int main(int argc, char* argv[]) {
         perror("Failed to initialize system clock.");
         return EXIT_FAILURE;
     }
-    if ((proc_shid = init_proc_handle(PROC_KEY) == -1)) {
+    if ((proc_shid = init_proc_handle(PROC_KEY)) == -1) {
         perror("Failed to initialize process handle");
         destruct_clock(CLOCK_KEY, clock_shid);
         return EXIT_FAILURE;
@@ -49,16 +50,15 @@ int main(int argc, char* argv[]) {
 
     // Loop and check shared memory 
     unsigned int max_run_time = get_allowable_run_time();
-    unsigned int process_count = 5;
+    unsigned int process_count = get_max_child_process_count();
     max_run_time *= NANO_SEC_IN_SEC;
     if (spawned_proc_id) {
         int stat;
         pid_t wait_pid;
         // While we are less than the run time
         while (get_total_tick() < max_run_time && process_count < TOTAL_ALLOWABLE_PROCESSES) {
-            //fprintf(stderr, "[!] %u\n", get_total_tick());
             // Tick the clock
-            tick(5);
+            tick(TICK_INCREMENT);
             // If we have procs ready to terminate . . . 
             if (get_count_procs_ready_terminate() > 0) {
                 // Signify that we are adding another, decreasing the count
@@ -73,10 +73,18 @@ int main(int argc, char* argv[]) {
                     break;
                 } else {
                     ++process_count;
+                    fprintf(stderr, "Processes: %d\n", process_count);
                 }
             }
         }
     } 
+
+    if (spawned_proc_id) {
+        if (process_count >= 100) {
+            fprintf(stderr, "[!] Time in master %u\n", get_total_tick());
+            set_is_abrupt_terminate();
+        }
+    }
 
     // Exec in the child
     if (spawned_proc_id == CHILD_PROCESS) {
@@ -87,7 +95,13 @@ int main(int argc, char* argv[]) {
     if (spawned_proc_id) {
         int status = 0;
         pid_t wait_pid;
-        while((wait_pid = wait(&status)) > 0);
+        while((wait_pid = wait(&status)) > 0) { 
+            tick(TICK_INCREMENT);
+            if (get_count_procs_ready_terminate() > 0) {
+                mark_terminate();
+            }
+            fprintf(stderr, "[!] Waiting in master @ time %u\n", get_total_tick());
+        }
         if (destruct_clock(CLOCK_KEY, clock_shid) == -1) {
             perror("Failed to deallocate clock");
         }
