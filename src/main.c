@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "../include/pclock.h"
 #include "../include/parse.h"
@@ -14,15 +16,19 @@
 #define CLOCK_KEY 8675309
 #define PROC_KEY 3141579
 
+int log_file_fd, clock_shid, proc_shid;
+
+
+void terminate_program();
+
 
 int main(int argc, char* argv[]) {
     parse_options(argc, argv);
     
     unsigned int max_child_process_count = get_max_child_process_count();
-
+    log_file_fd = open(get_logfile_path(), O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 
     // Initialize the system clock
-    int clock_shid, proc_shid;
     if ((clock_shid = init_clock(CLOCK_KEY)) == -1) {
         perror("Failed to initialize system clock.");
         return EXIT_FAILURE;
@@ -41,11 +47,6 @@ int main(int argc, char* argv[]) {
         if (spawned_proc_id == CHILD_PROCESS) {
             break;
         }
-    }
-
-    // XXX: Debug, remove.
-    if (spawned_proc_id == CHILD_PROCESS) {
-        fprintf(stderr, "[+] PID: %ld; PPID: %ld\n", (long) getpid(), (long) getppid());
     }
 
     // Loop and check shared memory 
@@ -93,22 +94,27 @@ int main(int argc, char* argv[]) {
 
     // Wait for all child processes to terminate and clean up.
     if (spawned_proc_id) {
-        int status = 0;
-        pid_t wait_pid;
-        while((wait_pid = wait(&status)) > 0) { 
-            tick(TICK_INCREMENT);
-            if (get_count_procs_ready_terminate() > 0) {
-                mark_terminate();
-            }
-            fprintf(stderr, "[!] Waiting in master @ time %u\n", get_total_tick());
-        }
-        if (destruct_clock(CLOCK_KEY, clock_shid) == -1) {
-            perror("Failed to deallocate clock");
-        }
-        if (destruct_proc_handle(PROC_KEY, proc_shid) == -1) {
-            perror("Failed to deallocate proc_handle");
-        }
+        terminate_program();
     } 
 
     return EXIT_SUCCESS;    
+}
+
+void terminate_program() {
+    set_is_abrupt_terminate();
+    int status = 0;
+    pid_t wait_pid;
+    while((wait_pid = wait(&status)) > 0) { 
+        tick(TICK_INCREMENT);
+        if (get_count_procs_ready_terminate() > 0) {
+            mark_terminate();
+        }
+    }
+    if (destruct_clock(CLOCK_KEY, clock_shid) == -1) {
+        perror("Failed to deallocate clock");
+    }
+    if (destruct_proc_handle(PROC_KEY, proc_shid) == -1) {
+        perror("Failed to deallocate proc_handle");
+    }
+    exit(EXIT_SUCCESS);
 }
